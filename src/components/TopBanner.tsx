@@ -5,7 +5,7 @@ const TopBanner = () => {
   return (
     <div className="w-full bg-[#D6BCFA] py-2">
       <div className="container mx-auto">
-        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 px-4 text-sm">
+        <div className="flex flex-wrap items-center justify-evenly gap-4 md:gap-8 px-4 text-sm">
           <div className="flex items-center gap-2">
             <Phone size={16} />
             <span>+971 4323 2999</span>
