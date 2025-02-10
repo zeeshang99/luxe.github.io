@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import TopBanner from "@/components/TopBanner";
 import HeroSection from "@/components/HeroSection";
 import FeaturedCars from "@/components/FeaturedCars";
+import RecentCars from "@/components/RecentCars";
 import SellForm from "@/components/SellForm";
 
 const Index = () => {
@@ -12,6 +13,7 @@ const Index = () => {
       <Navbar />
       <HeroSection />
       <FeaturedCars />
+      <RecentCars />
       <SellForm />
     </div>
   );
