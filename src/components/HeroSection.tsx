@@ -4,15 +4,16 @@ import { Button } from "./ui/button";
 const HeroSection = () => {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1492321936769-b49830bc1d1e')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          filter: "brightness(0.7)",
-        }}
-      />
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        style={{ filter: "brightness(0.7)" }}
+      >
+        <source src="https://www.youtube.com/watch?v=6RJoBYL4SHM" type="video/mp4" />
+      </video>
       
       <div className="relative z-10 text-center text-white space-y-6 px-4 animate-fade-up">
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
