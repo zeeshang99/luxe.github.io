@@ -17,9 +17,9 @@ const Index = () => {
       <SearchSection />
       <FeaturedCars />
       <RecentCars />
+      <SellForm />
       <AboutUs />
       <Contact />
-      <SellForm />
       <Footer />
     </div>
   );
