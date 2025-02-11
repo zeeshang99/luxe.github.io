@@ -50,16 +50,25 @@ const SellForm = () => {
   }
 
   return (
-    <section id="sell" className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <section id="sell" className="py-20 relative">
+      <div 
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: "url('https://images.unsplash.com/photo-1583121274602-3e2820c69888?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "brightness(0.3)"
+        }}
+      />
+      <div className="relative z-10 container mx-auto px-4">
         <div className="max-w-2xl mx-auto text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Sell Your Luxury Vehicle</h2>
-          <p className="text-luxury-600">
+          <h2 className="text-3xl font-bold mb-4 text-white">Sell Your Luxury Vehicle</h2>
+          <p className="text-gray-300">
             Get a premium offer for your premium vehicle
           </p>
         </div>
 
-        <div className="max-w-xl mx-auto">
+        <div className="max-w-xl mx-auto bg-white rounded-xl p-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
