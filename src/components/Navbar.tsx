@@ -5,19 +5,18 @@ import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
 const Navbar = () => {
   const navItems = [
-    { label: "Home", href: "/" },
+    { label: "Home", href: "#" },
     { label: "Inventory", href: "#inventory" },
     { label: "About Us", href: "#about" },
     { label: "Contact Us", href: "#contact" },
     { label: "Sell a Car", href: "#sell" },
-    { label: "News", href: "#news" },
   ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-transparent z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-evenly rounded-full bg-white shadow-sm py-4">
-          <a href="/" className="flex items-center space-x-2">
+          <a href="#" className="flex items-center space-x-2">
             <Car className="h-8 w-8" />
             <span className="font-bold text-2xl">VIPMOTORS</span>
           </a>

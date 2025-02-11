@@ -62,9 +62,9 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 100px;
 }
 
 .glass-card {
   @apply bg-white/80 backdrop-blur-lg border border-white/20 shadow-lg;
 }
-
