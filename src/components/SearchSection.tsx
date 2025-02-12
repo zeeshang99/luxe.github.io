@@ -5,7 +5,7 @@ import { Search } from "lucide-react";
 
 const SearchSection = () => {
   return (
-    <div className="container mx-auto px-4 py-12 -mt-20 relative z-20">
+    <div className="container mx-auto px-4 -mt-32 relative z-20">
       <div className="glass-card rounded-xl p-8 max-w-4xl mx-auto">
         <div className="space-y-6">
           <h2 className="text-2xl font-semibold text-center">Find Your Dream Car</h2>

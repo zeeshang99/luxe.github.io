@@ -1,5 +1,5 @@
 
-import { Car, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
@@ -15,9 +15,8 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 bg-transparent z-50">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-evenly rounded-full bg-white shadow-sm py-4">
-          <a href="#" className="flex items-center space-x-2">
-            <Car className="h-8 w-8" />
+        <div className="flex items-center justify-between rounded-full bg-white/90 backdrop-blur-sm shadow-sm py-4 px-8 max-w-5xl mx-auto">
+          <a href="#" className="flex items-center">
             <span className="font-bold text-2xl">VIPMOTORS</span>
           </a>
 
