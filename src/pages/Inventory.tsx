@@ -1,11 +1,17 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchSection from "@/components/SearchSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share2, Plus } from "lucide-react";
+import { Share2, Plus, Facebook, Twitter, LinkedIn, Link } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "@/components/ui/use-toast";
 
 const cars = [
   {
@@ -124,16 +130,55 @@ const InventoryPage = () => {
     return `${currencySymbols[currency]} ${price[currency].toLocaleString()}`;
   };
 
+  const handleShare = (car: typeof cars[0], platform: string) => {
+    const shareUrl = window.location.href;
+    const text = `Check out this ${car.year} ${car.name} at ${formatPrice(car.price)}!`;
+    
+    let shareLink = '';
+    switch (platform) {
+      case 'facebook':
+        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        break;
+      case 'twitter':
+        shareLink = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`;
+        break;
+      case 'linkedin':
+        shareLink = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "Link copied!",
+          description: "The car link has been copied to your clipboard.",
+        });
+        return;
+    }
+    
+    if (shareLink) {
+      window.open(shareLink, '_blank', 'width=600,height=400');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      {/* Hero Section */}
-      <div className="pt-24 pb-12 bg-white">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold text-center mb-4">Our Inventory</h1>
-          <p className="text-gray-600 text-center max-w-2xl mx-auto">
-            Explore our extensive collection of luxury and exotic vehicles
+      {/* Hero Banner */}
+      <div 
+        className="relative pt-40 pb-24 bg-black"
+        style={{
+          backgroundImage: "url('https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=2000&q=80')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="container mx-auto px-4 relative z-10">
+          <h1 className="text-5xl md:text-6xl font-bold text-center text-white mb-6">
+            Explore the Inventory
+          </h1>
+          <p className="text-xl text-gray-200 text-center max-w-2xl mx-auto">
+            Discover our exclusive collection of luxury and exotic vehicles
           </p>
         </div>
       </div>
@@ -167,13 +212,31 @@ const InventoryPage = () => {
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
                 <div className="absolute top-4 right-4 space-x-2">
-                  <Button 
-                    variant="secondary" 
-                    size="sm" 
-                    className="bg-white/80 backdrop-blur-sm hover:bg-white/90"
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="secondary" 
+                        size="sm" 
+                        className="bg-white/80 backdrop-blur-sm hover:bg-white/90"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => handleShare(car, 'facebook')}>
+                        <Facebook className="h-4 w-4 mr-2" /> Facebook
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare(car, 'twitter')}>
+                        <Twitter className="h-4 w-4 mr-2" /> Twitter
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare(car, 'linkedin')}>
+                        <LinkedIn className="h-4 w-4 mr-2" /> LinkedIn
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare(car, 'copy')}>
+                        <Link className="h-4 w-4 mr-2" /> Copy Link
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button 
                     variant="secondary" 
                     size="sm" 
