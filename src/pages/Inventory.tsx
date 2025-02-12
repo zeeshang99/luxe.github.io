@@ -1,3 +1,5 @@
+
+import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchSection from "@/components/SearchSection";
@@ -111,7 +113,7 @@ const cars = [
 ];
 
 const InventoryPage = () => {
-  const [currency, setCurrency] = React.useState<"USD" | "AED" | "EUR">("USD");
+  const [currency, setCurrency] = useState<"USD" | "AED" | "EUR">("USD");
   const currencySymbols = {
     USD: "$",
     AED: "AED",
