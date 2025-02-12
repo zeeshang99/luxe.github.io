@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchSection from "@/components/SearchSection";
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const cars = [
   {
@@ -120,12 +121,26 @@ const cars = [
 ];
 
 const InventoryPage = () => {
+  const navigate = useNavigate();
   const [currency, setCurrency] = useState<"USD" | "AED" | "EUR">("USD");
+  const [filter, setFilter] = useState<"all" | "available" | "sold">("all");
+  const [filteredCars, setFilteredCars] = useState(cars);
+  
   const currencySymbols = {
     USD: "$",
     AED: "AED",
     EUR: "€"
   };
+
+  useEffect(() => {
+    if (filter === "all") {
+      setFilteredCars(cars);
+    } else {
+      setFilteredCars(cars.filter(car => 
+        filter === "available" ? car.status === "Available" : car.status === "Sold"
+      ));
+    }
+  }, [filter]);
 
   const formatPrice = (price: { [key: string]: number }) => {
     return `${currencySymbols[currency]} ${price[currency].toLocaleString()}`;
@@ -160,6 +175,39 @@ const InventoryPage = () => {
     }
   };
 
+  const handleCompare = (car: typeof cars[0]) => {
+    const carsToCompare = JSON.parse(localStorage.getItem("carsToCompare") || "[]");
+    if (carsToCompare.length >= 3) {
+      toast({
+        title: "Compare limit reached",
+        description: "You can only compare up to 3 cars at a time.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (carsToCompare.some((c: typeof car) => c.id === car.id)) {
+      toast({
+        title: "Car already added",
+        description: "This car is already in your comparison list.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const updatedCars = [...carsToCompare, car];
+    localStorage.setItem("carsToCompare", JSON.stringify(updatedCars));
+    
+    toast({
+      title: "Car added to compare",
+      description: "Navigate to the compare page to view your selection.",
+    });
+    
+    if (updatedCars.length === 3) {
+      navigate("/compare");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -187,24 +235,41 @@ const InventoryPage = () => {
       {/* Search Section */}
       <SearchSection />
 
-      {/* Currency Toggle */}
+      {/* Filters Section */}
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-end gap-2 mb-6">
-          {(["USD", "AED", "EUR"] as const).map((curr) => (
-            <Button
-              key={curr}
-              variant={currency === curr ? "default" : "outline"}
-              onClick={() => setCurrency(curr)}
-              className="w-20"
-            >
-              {curr}
-            </Button>
-          ))}
+        <div className="flex flex-wrap justify-between items-center gap-4">
+          {/* Status Filter */}
+          <div className="flex gap-2">
+            {(["all", "available", "sold"] as const).map((status) => (
+              <Button
+                key={status}
+                variant={filter === status ? "default" : "outline"}
+                onClick={() => setFilter(status)}
+                className="capitalize"
+              >
+                {status}
+              </Button>
+            ))}
+          </div>
+          
+          {/* Currency Toggle */}
+          <div className="flex gap-2">
+            {(["USD", "AED", "EUR"] as const).map((curr) => (
+              <Button
+                key={curr}
+                variant={currency === curr ? "default" : "outline"}
+                onClick={() => setCurrency(curr)}
+                className="w-20"
+              >
+                {curr}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Cars Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cars.map((car) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+          {filteredCars.map((car) => (
             <Card key={car.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
               <div className="relative h-64 overflow-hidden rounded-t-lg">
                 <img
@@ -242,6 +307,7 @@ const InventoryPage = () => {
                     variant="secondary" 
                     size="sm" 
                     className="bg-white/80 backdrop-blur-sm hover:bg-white/90"
+                    onClick={() => handleCompare(car)}
                   >
                     <Plus className="h-4 w-4" />
                     Compare
