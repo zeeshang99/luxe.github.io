@@ -1,10 +1,11 @@
+
 import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchSection from "@/components/SearchSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share2, Plus, Facebook, Twitter, LinkedIn, Link } from "lucide-react";
+import { Share2, Plus, Facebook, Twitter, Linkedin, Link } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -230,7 +231,7 @@ const InventoryPage = () => {
                         <Twitter className="h-4 w-4 mr-2" /> Twitter
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleShare(car, 'linkedin')}>
-                        <LinkedIn className="h-4 w-4 mr-2" /> LinkedIn
+                        <Linkedin className="h-4 w-4 mr-2" /> LinkedIn
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleShare(car, 'copy')}>
                         <Link className="h-4 w-4 mr-2" /> Copy Link
