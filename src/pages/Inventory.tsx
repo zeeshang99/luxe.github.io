@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 const cars = [
   {
@@ -121,6 +122,7 @@ const cars = [
 
 const InventoryPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [currency, setCurrency] = useState<"USD" | "AED" | "EUR">("USD");
   const [filter, setFilter] = useState<"all" | "available" | "sold">("all");
   const [filteredCars, setFilteredCars] = useState(cars);
@@ -132,14 +134,69 @@ const InventoryPage = () => {
   };
 
   useEffect(() => {
-    if (filter === "all") {
-      setFilteredCars(cars);
-    } else {
-      setFilteredCars(cars.filter(car => 
-        filter === "available" ? car.status === "Available" : car.status === "Sold"
-      ));
+    let filtered = [...cars];
+    
+    // Apply search filters from URL params
+    const keyword = searchParams.get("keyword")?.toLowerCase();
+    const make = searchParams.get("make")?.toLowerCase();
+    const model = searchParams.get("model")?.toLowerCase();
+    const year = searchParams.get("year");
+    const price = searchParams.get("price");
+    const mileage = searchParams.get("mileage");
+
+    if (keyword) {
+      filtered = filtered.filter(car => 
+        car.name.toLowerCase().includes(keyword) ||
+        car.type.toLowerCase().includes(keyword) ||
+        car.engine.toLowerCase().includes(keyword)
+      );
     }
-  }, [filter]);
+
+    if (make) {
+      filtered = filtered.filter(car => 
+        car.name.toLowerCase().includes(make)
+      );
+    }
+
+    if (model) {
+      filtered = filtered.filter(car => 
+        car.type.toLowerCase().includes(model)
+      );
+    }
+
+    if (year) {
+      filtered = filtered.filter(car => 
+        car.year.toString() === year
+      );
+    }
+
+    if (price) {
+      const priceLimit = parseInt(price.replace(/\D/g, '')) * 1000;
+      filtered = filtered.filter(car => 
+        car.price.USD <= priceLimit
+      );
+    }
+
+    if (mileage) {
+      const [min, max] = mileage.split('-').map(v => parseInt(v) || 0);
+      filtered = filtered.filter(car => {
+        const carMileage = parseInt(car.mileage);
+        if (mileage.includes('+')) {
+          return carMileage >= min;
+        }
+        return carMileage >= min && carMileage <= max;
+      });
+    }
+
+    // Apply availability filter
+    if (filter !== "all") {
+      filtered = filtered.filter(car => 
+        filter === "available" ? car.status === "Available" : car.status === "Sold"
+      );
+    }
+
+    setFilteredCars(filtered);
+  }, [searchParams, filter]);
 
   const formatPrice = (price: { [key: string]: number }) => {
     return `${currencySymbols[currency]} ${price[currency].toLocaleString()}`;
