@@ -1,10 +1,10 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, X } from "lucide-react";
+import { Plus, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 
@@ -29,6 +29,22 @@ interface Car {
 const ComparePage = () => {
   const navigate = useNavigate();
   const carsToCompare = JSON.parse(localStorage.getItem("carsToCompare") || "[]") as Car[];
+  
+  // Mock additional images for each car (in real app, these would come from your data)
+  const [carImages] = useState<{ [key: number]: string[] }>(() => {
+    const images: { [key: number]: string[] } = {};
+    carsToCompare.forEach(car => {
+      images[car.id] = [
+        car.image,
+        car.image.replace('?', '?v=1'),
+        car.image.replace('?', '?v=2'),
+        car.image.replace('?', '?v=3'),
+      ];
+    });
+    return images;
+  });
+  
+  const [currentImageIndexes, setCurrentImageIndexes] = useState<{ [key: number]: number }>({});
 
   useEffect(() => {
     if (carsToCompare.length === 1) {
@@ -53,13 +69,27 @@ const ComparePage = () => {
     </div>
   );
 
+  const nextImage = (carId: number) => {
+    setCurrentImageIndexes(prev => ({
+      ...prev,
+      [carId]: ((prev[carId] || 0) + 1) % (carImages[carId]?.length || 1)
+    }));
+  };
+
+  const prevImage = (carId: number) => {
+    setCurrentImageIndexes(prev => ({
+      ...prev,
+      [carId]: ((prev[carId] || 0) - 1 + (carImages[carId]?.length || 1)) % (carImages[carId]?.length || 1)
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
       <div className="container mx-auto px-4 pt-24 pb-12">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">Compare Vehicles</h1>
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-4">Compare Vehicles</h1>
           <p className="text-gray-600">
             {carsToCompare.length} of 10 vehicles selected
           </p>
@@ -73,21 +103,63 @@ const ComparePage = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {carsToCompare.map((car) => (
             <Card key={car.id} className="relative overflow-hidden">
               <button
                 onClick={() => removeCar(car.id)}
-                className="absolute top-2 right-2 p-1 bg-white/80 rounded-full hover:bg-white/90 transition-colors"
+                className="absolute top-2 right-2 p-1 bg-white/80 rounded-full hover:bg-white/90 transition-colors z-10"
               >
                 <X className="h-4 w-4 text-gray-600" />
               </button>
               <div className="p-6">
-                <img
-                  src={car.image}
-                  alt={car.name}
-                  className="w-full h-48 object-cover rounded-lg mb-4"
-                />
+                <div className="relative group">
+                  <img
+                    src={carImages[car.id]?.[currentImageIndexes[car.id] || 0]}
+                    alt={car.name}
+                    className="w-full h-64 object-cover rounded-lg mb-4"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="bg-white/80 hover:bg-white/90"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        prevImage(car.id);
+                      }}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="bg-white/80 hover:bg-white/90"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        nextImage(car.id);
+                      }}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-2">
+                    {carImages[car.id]?.map((_, index) => (
+                      <button
+                        key={index}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          (currentImageIndexes[car.id] || 0) === index
+                            ? "bg-white"
+                            : "bg-white/50"
+                        }`}
+                        onClick={() => setCurrentImageIndexes(prev => ({
+                          ...prev,
+                          [car.id]: index
+                        }))}
+                      />
+                    ))}
+                  </div>
+                </div>
                 <h3 className="text-xl font-semibold mb-4">{car.name}</h3>
                 
                 <div className="space-y-1">
