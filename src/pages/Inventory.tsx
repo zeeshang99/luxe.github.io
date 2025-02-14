@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -177,10 +176,10 @@ const InventoryPage = () => {
 
   const handleCompare = (car: typeof cars[0]) => {
     const carsToCompare = JSON.parse(localStorage.getItem("carsToCompare") || "[]");
-    if (carsToCompare.length >= 3) {
+    if (carsToCompare.length >= 10) {
       toast({
         title: "Compare limit reached",
-        description: "You can only compare up to 3 cars at a time.",
+        description: "You can only compare up to 10 cars at a time.",
         variant: "destructive",
       });
       return;
@@ -200,10 +199,10 @@ const InventoryPage = () => {
     
     toast({
       title: "Car added to compare",
-      description: "Navigate to the compare page to view your selection.",
+      description: `${updatedCars.length === 1 ? 'Add one more car to start comparing' : 'Navigate to the compare page to view your selection.'}`,
     });
     
-    if (updatedCars.length === 3) {
+    if (updatedCars.length >= 2) {
       navigate("/compare");
     }
   };
