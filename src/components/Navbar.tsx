@@ -2,9 +2,31 @@
 import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleNavigation = (href: string) => {
+    if (href.startsWith('/#')) {
+      // If we're already on the home page, just scroll to the anchor
+      if (location.pathname === '/') {
+        const element = document.querySelector(href.replace('/', ''));
+        element?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // If we're on another page, navigate to home first then scroll
+        navigate('/');
+        setTimeout(() => {
+          const element = document.querySelector(href.replace('/', ''));
+          element?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    } else {
+      navigate(href);
+    }
+  };
+
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Inventory", href: "/inventory" },
@@ -24,13 +46,13 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <Link
+              <button
                 key={item.label}
-                to={item.href}
+                onClick={() => handleNavigation(item.href)}
                 className="text-luxury-700 hover:text-luxury-900 transition-colors"
               >
                 {item.label}
-              </Link>
+              </button>
             ))}
           </div>
 
@@ -51,13 +73,17 @@ const Navbar = () => {
             <SheetContent>
               <div className="flex flex-col space-y-4 mt-8">
                 {navItems.map((item) => (
-                  <Link
+                  <button
                     key={item.label}
-                    to={item.href}
-                    className="text-luxury-700 hover:text-luxury-900 transition-colors"
+                    onClick={() => {
+                      handleNavigation(item.href);
+                      const closeButton = document.querySelector('[data-radix-collection-item]');
+                      (closeButton as HTMLElement)?.click();
+                    }}
+                    className="text-luxury-700 hover:text-luxury-900 transition-colors text-left"
                   >
                     {item.label}
-                  </Link>
+                  </button>
                 ))}
                 <Link
                   to="/compare"
