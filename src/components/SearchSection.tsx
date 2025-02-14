@@ -30,7 +30,6 @@ const SearchSection = () => {
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
     
-    // Create query params from non-empty search values
     const params = new URLSearchParams();
     Object.entries(searchValues).forEach(([key, value]) => {
       if (value) {
@@ -38,7 +37,6 @@ const SearchSection = () => {
       }
     });
 
-    // Navigate to inventory page with search params
     navigate(`/inventory?${params.toString()}`);
   };
 
@@ -75,9 +73,20 @@ const SearchSection = () => {
                 onChange={(e) => setSearchValues(prev => ({ ...prev, make: e.target.value }))}
               >
                 <option value="">Make</option>
-                <option value="bmw">BMW</option>
-                <option value="mercedes">Mercedes</option>
+                <option value="aston martin">Aston Martin</option>
                 <option value="audi">Audi</option>
+                <option value="bentley">Bentley</option>
+                <option value="bmw">BMW</option>
+                <option value="bugatti">Bugatti</option>
+                <option value="ferrari">Ferrari</option>
+                <option value="koenigsegg">Koenigsegg</option>
+                <option value="lamborghini">Lamborghini</option>
+                <option value="maserati">Maserati</option>
+                <option value="mclaren">McLaren</option>
+                <option value="mercedes">Mercedes-Benz</option>
+                <option value="pagani">Pagani</option>
+                <option value="porsche">Porsche</option>
+                <option value="rolls royce">Rolls-Royce</option>
               </select>
               <select 
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -88,6 +97,10 @@ const SearchSection = () => {
                 <option value="sedan">Sedan</option>
                 <option value="suv">SUV</option>
                 <option value="coupe">Coupe</option>
+                <option value="convertible">Convertible</option>
+                <option value="hypercar">Hypercar</option>
+                <option value="supercar">Supercar</option>
+                <option value="grand tourer">Grand Tourer</option>
               </select>
               <select 
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -119,6 +132,10 @@ const SearchSection = () => {
                 <option value="50k">Under $50k</option>
                 <option value="100k">Under $100k</option>
                 <option value="200k">Under $200k</option>
+                <option value="500k">Under $500k</option>
+                <option value="1000k">Under $1M</option>
+                <option value="2000k">Under $2M</option>
+                <option value="5000k">Under $5M</option>
               </select>
               <Button 
                 type="button"
