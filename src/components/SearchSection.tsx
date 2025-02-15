@@ -1,4 +1,3 @@
-
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Search, RotateCcw } from "lucide-react";
@@ -47,7 +46,7 @@ const SearchSection = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 -mt-32 relative z-20">
+    <div className="container mx-auto px-4 -mt-20 relative z-20">
       <div className="glass-card rounded-xl p-8 max-w-4xl mx-auto">
         <div className="space-y-6">
           <h2 className="text-2xl font-semibold text-center">Find Your Dream Car</h2>
@@ -108,9 +107,9 @@ const SearchSection = () => {
                 onChange={(e) => setSearchValues(prev => ({ ...prev, year: e.target.value }))}
               >
                 <option value="">Year</option>
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
-                <option value="2022">2022</option>
+                {Array.from({ length: 25 }, (_, i) => 2024 - i).map(year => (
+                  <option key={year} value={year.toString()}>{year}</option>
+                ))}
               </select>
               <select 
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm"

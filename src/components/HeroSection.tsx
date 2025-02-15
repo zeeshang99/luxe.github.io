@@ -1,9 +1,12 @@
 
 import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="px-4 pt-24 pb-32">
+    <div className="px-4 pt-24 pb-48">
       <div className="relative min-h-[80vh] flex items-center justify-center overflow-hidden rounded-3xl">
         <div 
           className="absolute inset-0 w-full h-full"
@@ -26,9 +29,9 @@ const HeroSection = () => {
             <Button
               size="lg"
               className="bg-white text-black hover:bg-gray-100"
-              asChild
+              onClick={() => navigate('/inventory')}
             >
-              <a href="#cars">Browse Collection</a>
+              Browse Collection
             </Button>
           </div>
         </div>
