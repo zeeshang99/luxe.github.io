@@ -8,15 +8,28 @@ const HeroSection = () => {
   return (
     <div className="px-4 pt-24 pb-48">
       <div className="relative min-h-[80vh] flex items-center justify-center overflow-hidden rounded-3xl">
-        <div 
-          className="absolute inset-0 w-full h-full"
-          style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1617814076367-b759c7d7e738?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            filter: "brightness(0.7)"
-          }}
-        />
+        {/* Video Background */}
+        <div className="absolute inset-0 w-full h-full">
+          <div className="absolute inset-0 bg-black/50 z-[1]" /> {/* Overlay */}
+          <iframe
+            className="w-full h-full"
+            src="https://www.youtube.com/embed/6RJoBYL4SHM?autoplay=1&mute=1&loop=1&playlist=6RJoBYL4SHM&controls=0&showinfo=0&rel=0&modestbranding=1"
+            title="Background Video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            style={{
+              width: '100%',
+              height: '100%',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              objectFit: 'cover',
+              pointerEvents: 'none',
+              border: 'none',
+              scale: '1.5'
+            }}
+          />
+        </div>
         
         <div className="relative z-10 text-center text-white space-y-6 px-4 animate-fade-up">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
