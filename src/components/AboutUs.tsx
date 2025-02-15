@@ -62,6 +62,19 @@ const AboutUs = () => {
             <p className="text-gray-600">
               Discover a world of unrivaled luxury at our showroom which stands as the ultimate hub for super and luxury and hypercars. We go beyond conventional boundaries, presenting a selection of the world's most exclusive vehicles in one showroom here in Dubai on Sheikh Zayed Road. Immerse yourself in the seamless fusion of design and engineering that elevates each car to the status of a unique masterpiece. At our showroom, we establish new benchmarks embracing a lifestyle defined by sophistication and Luxury. Experience automotive excellence like never before.
             </p>
+            
+            {/* Video Section */}
+            <div className="mt-12">
+              <div className="relative rounded-xl overflow-hidden shadow-2xl">
+                <iframe
+                  className="w-full aspect-video"
+                  src="https://www.youtube.com/embed/cVuTkOMd3jg"
+                  title="VIP Motors Showroom"
+                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </div>
           </div>
         </div>
       </div>
