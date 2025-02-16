@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -10,7 +10,9 @@ import {
   Phone, 
   BarChart2,
   Mail,
-  Share2
+  Share2,
+  Check,
+  Plus
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -143,9 +145,52 @@ const CarDetails = () => {
   const carId = Number(id);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
+  const [isInCompare, setIsInCompare] = useState(false);
 
   const car = cars.find((c) => c.id === carId);
   const images = carImages[carId] || [];
+
+  useEffect(() => {
+    const carsToCompare = JSON.parse(localStorage.getItem("carsToCompare") || "[]");
+    setIsInCompare(carsToCompare.some((c: typeof car) => c.id === carId));
+  }, [carId]);
+
+  const handleCompare = () => {
+    const carsToCompare = JSON.parse(localStorage.getItem("carsToCompare") || "[]");
+    
+    if (isInCompare) {
+      const updatedCars = carsToCompare.filter((c: typeof car) => c.id !== carId);
+      localStorage.setItem("carsToCompare", JSON.stringify(updatedCars));
+      setIsInCompare(false);
+      
+      toast({
+        title: "Car removed from compare",
+        description: "The car has been removed from your comparison list.",
+      });
+    } else {
+      if (carsToCompare.length >= 10) {
+        toast({
+          title: "Compare limit reached",
+          description: "You can only compare up to 10 cars at a time.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const updatedCars = [...carsToCompare, car];
+      localStorage.setItem("carsToCompare", JSON.stringify(updatedCars));
+      setIsInCompare(true);
+      
+      toast({
+        title: "Car added to compare",
+        description: `${updatedCars.length === 1 ? 'Add one more car to start comparing' : 'Navigate to the compare page to view your selection.'}`,
+      });
+      
+      if (updatedCars.length >= 2) {
+        navigate("/compare");
+      }
+    }
+  };
 
   const handlePrevImage = () => {
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -298,10 +343,19 @@ const CarDetails = () => {
               <Button 
                 variant="outline" 
                 className="flex-1"
-                onClick={() => navigate(`/compare?car=${car.id}`)}
+                onClick={handleCompare}
               >
-                <BarChart2 className="h-4 w-4 mr-2" />
-                Compare
+                {isInCompare ? (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Added
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Compare
+                  </>
+                )}
               </Button>
             </div>
             

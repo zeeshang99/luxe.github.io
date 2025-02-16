@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -24,13 +23,18 @@ interface Car {
   engine: string;
   color: string;
   status: string;
+  transmission: string;
+  bodyType: string;
+  fuelType: string;
+  horsepower: number;
+  warranty: string;
+  specs: string;
 }
 
 const ComparePage = () => {
   const navigate = useNavigate();
   const carsToCompare = JSON.parse(localStorage.getItem("carsToCompare") || "[]") as Car[];
   
-  // Mock additional images for each car (in real app, these would come from your data)
   const [carImages] = useState<{ [key: number]: string[] }>(() => {
     const images: { [key: number]: string[] } = {};
     carsToCompare.forEach(car => {
@@ -62,7 +66,7 @@ const ComparePage = () => {
     window.location.reload();
   };
 
-  const formatSpecification = (label: string, value: string) => (
+  const formatSpecification = (label: string, value: string | number) => (
     <div className="py-2 border-b border-gray-100 last:border-0">
       <p className="font-medium text-gray-700">{label}</p>
       <p className="text-gray-600">{value}</p>
@@ -143,33 +147,23 @@ const ComparePage = () => {
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-2">
-                    {carImages[car.id]?.map((_, index) => (
-                      <button
-                        key={index}
-                        className={`w-2 h-2 rounded-full transition-colors ${
-                          (currentImageIndexes[car.id] || 0) === index
-                            ? "bg-white"
-                            : "bg-white/50"
-                        }`}
-                        onClick={() => setCurrentImageIndexes(prev => ({
-                          ...prev,
-                          [car.id]: index
-                        }))}
-                      />
-                    ))}
-                  </div>
                 </div>
                 <h3 className="text-xl font-semibold mb-4">{car.name}</h3>
                 
                 <div className="space-y-1">
-                  {formatSpecification("Year", car.year.toString())}
+                  {formatSpecification("Year", car.year)}
                   {formatSpecification("Engine", car.engine)}
-                  {formatSpecification("Mileage", car.mileage)}
-                  {formatSpecification("Exterior Color", car.color)}
+                  {formatSpecification("Mileage", `${car.mileage} km`)}
+                  {formatSpecification("Color", car.color)}
                   {formatSpecification("Type", car.type)}
                   {formatSpecification("Location", car.location)}
                   {formatSpecification("Status", car.status)}
+                  {formatSpecification("Transmission", car.transmission)}
+                  {formatSpecification("Body Type", car.bodyType)}
+                  {formatSpecification("Fuel Type", car.fuelType)}
+                  {formatSpecification("Horsepower", `${car.horsepower} HP`)}
+                  {formatSpecification("Warranty", car.warranty)}
+                  {formatSpecification("Specs", car.specs)}
                 </div>
               </div>
             </Card>
