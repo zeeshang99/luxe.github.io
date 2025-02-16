@@ -6,6 +6,88 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
+// Import the cars data from Inventory
+const cars = [
+  {
+    id: 1,
+    name: "Bugatti Chiron",
+    price: {
+      USD: 3000000,
+      AED: 11020000,
+      EUR: 2760000
+    },
+    year: 2024,
+    image: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738",
+    mileage: "50",
+    location: "Dubai, UAE",
+    type: "Hypercar",
+    engine: "8.0L W16 Quad-Turbo",
+    color: "Black/Blue",
+    status: "Available",
+    specs: "GCC",
+    warranty: "5 Years",
+    transmission: "Automatic",
+    bodyType: "Coupe",
+    fuelType: "Petrol",
+    doors: 2,
+    cylinders: 16,
+    horsepower: 1500,
+    make: "bugatti"
+  },
+  {
+    id: 2,
+    name: "Rolls-Royce Phantom",
+    price: {
+      USD: 580000,
+      AED: 2130000,
+      EUR: 533000
+    },
+    year: 2024,
+    image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a",
+    mileage: "100",
+    location: "Dubai, UAE",
+    type: "Luxury",
+    engine: "6.75L V12",
+    color: "Midnight Blue",
+    status: "Available",
+    specs: "GCC",
+    warranty: "4 Years",
+    transmission: "Automatic",
+    bodyType: "Sedan",
+    fuelType: "Petrol",
+    doors: 4,
+    cylinders: 12,
+    horsepower: 563,
+    make: "rolls royce"
+  },
+  {
+    id: 3,
+    name: "Lamborghini Aventador",
+    price: {
+      USD: 450000,
+      AED: 1560000,
+      EUR: 372000
+    },
+    year: 2023,
+    image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b",
+    mileage: "250",
+    location: "Abu Dhabi, UAE",
+    type: "Supercar",
+    engine: "6.5L V12",
+    color: "Red",
+    status: "Available",
+    specs: "European",
+    warranty: "3 Years",
+    transmission: "Automatic",
+    bodyType: "Coupe",
+    fuelType: "Petrol",
+    doors: 2,
+    cylinders: 12,
+    horsepower: 770,
+    make: "lamborghini"
+  },
+];
+
 // This would typically come from an API, using static data for demonstration
 const carImages = {
   1: [
@@ -23,6 +105,17 @@ const carImages = {
     "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?q=80",
     "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?q=60",
   ],
+};
+
+// Add the formatPrice function
+const formatPrice = (price: { [key: string]: number }) => {
+  const currency = "USD"; // Default to USD
+  const currencySymbols = {
+    USD: "$",
+    AED: "AED",
+    EUR: "€"
+  };
+  return `${currencySymbols[currency as keyof typeof currencySymbols]} ${price[currency].toLocaleString()}`;
 };
 
 const CarDetails = () => {
