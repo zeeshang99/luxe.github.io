@@ -3,7 +3,28 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronLeft, ChevronRight, Phone, BarChart2 } from "lucide-react";
+import { 
+  ArrowLeft, 
+  ChevronLeft, 
+  ChevronRight, 
+  Phone, 
+  BarChart2,
+  Mail,
+  Share2
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const cars = [
   {
@@ -104,8 +125,7 @@ const carImages = {
   ],
 };
 
-const formatPrice = (price: { [key: string]: number }) => {
-  const currency = "USD"; // Default to USD
+const formatPrice = (price: { [key: string]: number }, currency: string) => {
   const currencySymbols = {
     USD: "$",
     AED: "AED",
@@ -122,6 +142,7 @@ const CarDetails = () => {
   const navigate = useNavigate();
   const carId = Number(id);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [selectedCurrency, setSelectedCurrency] = useState("USD");
 
   const car = cars.find((c) => c.id === carId);
   const images = carImages[carId] || [];
@@ -132,6 +153,15 @@ const CarDetails = () => {
 
   const handleNextImage = () => {
     setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: car?.name,
+        url: window.location.href,
+      });
+    }
   };
 
   if (!car) {
@@ -146,12 +176,12 @@ const CarDetails = () => {
     );
   }
 
-  const formattedPrice = formatPrice(car.price);
+  const formattedPrice = formatPrice(car.price, selectedCurrency);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-20">
         <Button
           variant="outline"
           onClick={() => navigate("/inventory")}
@@ -217,16 +247,53 @@ const CarDetails = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-start">
               <h1 className="text-3xl font-bold mb-2">{car.name}</h1>
-              <p className="text-2xl font-bold">
-                <span className="text-[#F97316]">{formattedPrice.symbol}</span>
-                <span className="text-red-500">{formattedPrice.value}</span>
-              </p>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={selectedCurrency}
+                  onValueChange={setSelectedCurrency}
+                >
+                  <SelectTrigger className="w-24">
+                    <SelectValue placeholder="Currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="AED">AED</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-2xl font-bold">
+                  <span className="text-gray-500">{formattedPrice.symbol}</span>
+                  <span className="text-red-500">{formattedPrice.value}</span>
+                </p>
+              </div>
             </div>
             
             <div className="flex gap-4">
-              <Button className="flex-1 bg-black hover:bg-black/90">
-                <Phone className="h-4 w-4 mr-2" />
-                Contact Us
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="flex-1 bg-black hover:bg-black/90">
+                    <Phone className="h-4 w-4 mr-2" />
+                    Contact Us
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Phone className="h-4 w-4 mr-2" />
+                    <span>04 323 2999</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Mail className="h-4 w-4 mr-2" />
+                    <span>contact@example.com</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={handleShare}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
               </Button>
               <Button 
                 variant="outline" 
