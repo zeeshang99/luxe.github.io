@@ -1,12 +1,10 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Phone, BarChart2 } from "lucide-react";
 
-// Import the cars data from Inventory
 const cars = [
   {
     id: 1,
@@ -88,7 +86,6 @@ const cars = [
   },
 ];
 
-// This would typically come from an API, using static data for demonstration
 const carImages = {
   1: [
     "https://images.unsplash.com/photo-1617814076367-b759c7d7e738",
@@ -107,7 +104,6 @@ const carImages = {
   ],
 };
 
-// Add the formatPrice function
 const formatPrice = (price: { [key: string]: number }) => {
   const currency = "USD"; // Default to USD
   const currencySymbols = {
@@ -115,16 +111,28 @@ const formatPrice = (price: { [key: string]: number }) => {
     AED: "AED",
     EUR: "€"
   };
-  return `${currencySymbols[currency as keyof typeof currencySymbols]} ${price[currency].toLocaleString()}`;
+  return {
+    symbol: currencySymbols[currency as keyof typeof currencySymbols],
+    value: price[currency].toLocaleString()
+  };
 };
 
 const CarDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const carId = Number(id);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Find the car from our data
   const car = cars.find((c) => c.id === carId);
+  const images = carImages[carId] || [];
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
 
   if (!car) {
     return (
@@ -138,33 +146,63 @@ const CarDetails = () => {
     );
   }
 
+  const formattedPrice = formatPrice(car.price);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="container mx-auto px-4 py-12">
         <Button
           variant="outline"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/inventory")}
           className="mb-8"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Inventory
         </Button>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
           <div className="space-y-4">
-            <div className="aspect-video overflow-hidden rounded-lg">
+            <div className="relative aspect-video overflow-hidden rounded-lg shadow-xl">
               <img
-                src={car.image}
+                src={images[currentImageIndex]}
                 alt={car.name}
                 className="w-full h-full object-cover"
               />
+              <div className="absolute inset-0 flex items-center justify-between px-4">
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  onClick={handlePrevImage}
+                  className="rounded-full bg-white/80 hover:bg-white"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  onClick={handleNextImage}
+                  className="rounded-full bg-white/80 hover:bg-white"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              </div>
+              <div className="absolute top-4 left-4">
+                <span className={`px-4 py-2 rounded-full text-sm font-medium ${
+                  car.status === "Available" ? "bg-green-500" : "bg-red-500"
+                } text-white shadow-lg`}>
+                  {car.status}
+                </span>
+              </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
-              {carImages[carId]?.map((img, index) => (
+              {images.map((img, index) => (
                 <div
                   key={index}
-                  className="aspect-video overflow-hidden rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                  className={`aspect-video overflow-hidden rounded-lg cursor-pointer hover:opacity-80 transition-opacity ${
+                    currentImageIndex === index ? "ring-2 ring-black" : ""
+                  }`}
+                  onClick={() => setCurrentImageIndex(index)}
                 >
                   <img
                     src={img}
@@ -177,11 +215,27 @@ const CarDetails = () => {
           </div>
           
           <div className="space-y-6">
-            <div>
+            <div className="flex justify-between items-start">
               <h1 className="text-3xl font-bold mb-2">{car.name}</h1>
-              <p className="text-2xl font-bold text-luxury-800">
-                {formatPrice(car.price)}
+              <p className="text-2xl font-bold">
+                <span className="text-[#F97316]">{formattedPrice.symbol}</span>
+                <span className="text-red-500">{formattedPrice.value}</span>
               </p>
+            </div>
+            
+            <div className="flex gap-4">
+              <Button className="flex-1 bg-black hover:bg-black/90">
+                <Phone className="h-4 w-4 mr-2" />
+                Contact Us
+              </Button>
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => navigate(`/compare?car=${car.id}`)}
+              >
+                <BarChart2 className="h-4 w-4 mr-2" />
+                Compare
+              </Button>
             </div>
             
             <div className="grid grid-cols-2 gap-6">
