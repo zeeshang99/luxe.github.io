@@ -24,6 +24,7 @@ const SearchSection = () => {
       price: "",
       mileage: ""
     });
+    navigate('/inventory');
   };
 
   const handleSearch = (e?: React.FormEvent) => {
@@ -39,10 +40,16 @@ const SearchSection = () => {
     navigate(`/inventory?${params.toString()}`);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
+  const handleSingleOptionChange = (key: string, value: string) => {
+    setSearchValues(prev => ({ ...prev, [key]: value }));
+    const params = new URLSearchParams();
+    const updatedValues = { ...searchValues, [key]: value };
+    Object.entries(updatedValues).forEach(([k, v]) => {
+      if (v) {
+        params.append(k, v);
+      }
+    });
+    navigate(`/inventory?${params.toString()}`);
   };
 
   return (
@@ -57,8 +64,7 @@ const SearchSection = () => {
                 placeholder="Search by make, model, or keyword" 
                 className="flex-1"
                 value={searchValues.keyword}
-                onChange={(e) => setSearchValues(prev => ({ ...prev, keyword: e.target.value }))}
-                onKeyPress={handleKeyPress}
+                onChange={(e) => handleSingleOptionChange('keyword', e.target.value)}
               />
               <Button type="submit" className="bg-black hover:bg-black/90">
                 <Search className="h-4 w-4 mr-2" />
@@ -69,7 +75,7 @@ const SearchSection = () => {
               <select 
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={searchValues.make}
-                onChange={(e) => setSearchValues(prev => ({ ...prev, make: e.target.value }))}
+                onChange={(e) => handleSingleOptionChange('make', e.target.value)}
               >
                 <option value="">Make</option>
                 <option value="aston martin">Aston Martin</option>
@@ -90,7 +96,7 @@ const SearchSection = () => {
               <select 
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={searchValues.model}
-                onChange={(e) => setSearchValues(prev => ({ ...prev, model: e.target.value }))}
+                onChange={(e) => handleSingleOptionChange('model', e.target.value)}
               >
                 <option value="">Model</option>
                 <option value="sedan">Sedan</option>
@@ -104,7 +110,7 @@ const SearchSection = () => {
               <select 
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={searchValues.year}
-                onChange={(e) => setSearchValues(prev => ({ ...prev, year: e.target.value }))}
+                onChange={(e) => handleSingleOptionChange('year', e.target.value)}
               >
                 <option value="">Year</option>
                 {Array.from({ length: 25 }, (_, i) => 2024 - i).map(year => (
@@ -114,18 +120,18 @@ const SearchSection = () => {
               <select 
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={searchValues.mileage}
-                onChange={(e) => setSearchValues(prev => ({ ...prev, mileage: e.target.value }))}
+                onChange={(e) => handleSingleOptionChange('mileage', e.target.value)}
               >
                 <option value="">Mileage</option>
-                <option value="0-1000">0-1,000 mi</option>
-                <option value="1000-5000">1,000-5,000 mi</option>
-                <option value="5000-10000">5,000-10,000 mi</option>
-                <option value="10000+">10,000+ mi</option>
+                <option value="0-1000">0-1,000 km</option>
+                <option value="1000-5000">1,000-5,000 km</option>
+                <option value="5000-10000">5,000-10,000 km</option>
+                <option value="10000+">10,000+ km</option>
               </select>
               <select 
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={searchValues.price}
-                onChange={(e) => setSearchValues(prev => ({ ...prev, price: e.target.value }))}
+                onChange={(e) => handleSingleOptionChange('price', e.target.value)}
               >
                 <option value="">Price Range</option>
                 <option value="50k">Under $50k</option>

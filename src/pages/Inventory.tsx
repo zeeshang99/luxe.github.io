@@ -26,12 +26,21 @@ const cars = [
     },
     year: 2024,
     image: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738",
-    mileage: "50 mi",
+    mileage: "50",
     location: "Dubai, UAE",
     type: "Hypercar",
     engine: "8.0L W16 Quad-Turbo",
     color: "Black/Blue",
     status: "Available",
+    specs: "GCC",
+    warranty: "5 Years",
+    transmission: "Automatic",
+    bodyType: "Coupe",
+    fuelType: "Petrol",
+    doors: 2,
+    cylinders: 16,
+    horsepower: 1500,
+    make: "bugatti"
   },
   {
     id: 2,
@@ -43,12 +52,21 @@ const cars = [
     },
     year: 2024,
     image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a",
-    mileage: "100 mi",
+    mileage: "100",
     location: "Dubai, UAE",
     type: "Luxury",
     engine: "6.75L V12",
     color: "Midnight Blue",
     status: "Available",
+    specs: "GCC",
+    warranty: "4 Years",
+    transmission: "Automatic",
+    bodyType: "Sedan",
+    fuelType: "Petrol",
+    doors: 4,
+    cylinders: 12,
+    horsepower: 563,
+    make: "rolls royce"
   },
   {
     id: 3,
@@ -60,63 +78,21 @@ const cars = [
     },
     year: 2023,
     image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b",
-    mileage: "250 mi",
+    mileage: "250",
     location: "Abu Dhabi, UAE",
     type: "Supercar",
     engine: "6.5L V12",
     color: "Red",
     status: "Available",
-  },
-  {
-    id: 4,
-    name: "Ferrari SF90 Stradale",
-    price: {
-      USD: 625000,
-      AED: 2290000,
-      EUR: 562000
-    },
-    year: 2024,
-    image: "https://images.unsplash.com/photo-1583121274602-3e2820c69888",
-    mileage: "150 mi",
-    location: "Dubai, UAE",
-    type: "Supercar",
-    engine: "8.0L V12",
-    color: "Red",
-    status: "Available",
-  },
-  {
-    id: 5,
-    name: "Porsche 911 GT3 RS",
-    price: {
-      USD: 225000,
-      AED: 800000,
-      EUR: 180000
-    },
-    year: 2024,
-    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70",
-    mileage: "180 mi",
-    location: "Dubai, UAE",
-    type: "Sports Car",
-    engine: "3.0L V6",
-    color: "Black",
-    status: "Available",
-  },
-  {
-    id: 6,
-    name: "McLaren 720S",
-    price: {
-      USD: 315000,
-      AED: 1160000,
-      EUR: 243000
-    },
-    year: 2023,
-    image: "https://images.unsplash.com/photo-1621135802920-933f4b6e85a6",
-    mileage: "200 mi",
-    location: "Abu Dhabi, UAE",
-    type: "Supercar",
-    engine: "6.5L V12",
-    color: "Red",
-    status: "Available",
+    specs: "European",
+    warranty: "3 Years",
+    transmission: "Automatic",
+    bodyType: "Coupe",
+    fuelType: "Petrol",
+    doors: 2,
+    cylinders: 12,
+    horsepower: 770,
+    make: "lamborghini"
   },
 ];
 
@@ -386,26 +362,54 @@ const InventoryPage = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3 text-sm text-luxury-600">
+                <div className="space-y-4 text-sm text-luxury-600">
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="font-medium text-luxury-800">Engine</p>
-                      <p>{car.engine}</p>
-                    </div>
                     <div>
                       <p className="font-medium text-luxury-800">Year</p>
                       <p>{car.year}</p>
                     </div>
                     <div>
-                      <p className="font-medium text-luxury-800">Mileage</p>
-                      <p>{car.mileage}</p>
+                      <p className="font-medium text-luxury-800">Kilometers</p>
+                      <p>{car.mileage} km</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-luxury-800">Warranty</p>
+                      <p>{car.warranty}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-luxury-800">Specs</p>
+                      <p>{car.specs}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-luxury-800">Transmission</p>
+                      <p>{car.transmission}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-luxury-800">Body Type</p>
+                      <p>{car.bodyType}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-luxury-800">Fuel Type</p>
+                      <p>{car.fuelType}</p>
                     </div>
                     <div>
                       <p className="font-medium text-luxury-800">Color</p>
                       <p>{car.color}</p>
                     </div>
+                    <div>
+                      <p className="font-medium text-luxury-800">Doors</p>
+                      <p>{car.doors}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-luxury-800">Cylinders</p>
+                      <p>{car.cylinders}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-luxury-800">Horsepower</p>
+                      <p>{car.horsepower} HP</p>
+                    </div>
                   </div>
-                  <div className="pt-2">
+                  <div>
                     <p className="font-medium text-luxury-800">Location</p>
                     <p>{car.location}</p>
                   </div>
