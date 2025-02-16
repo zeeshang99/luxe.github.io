@@ -112,7 +112,6 @@ const InventoryPage = () => {
   useEffect(() => {
     let filtered = [...cars];
     
-    // Apply search filters from URL params
     const keyword = searchParams.get("keyword")?.toLowerCase();
     const make = searchParams.get("make")?.toLowerCase();
     const model = searchParams.get("model")?.toLowerCase();
@@ -164,7 +163,6 @@ const InventoryPage = () => {
       });
     }
 
-    // Apply availability filter
     if (filter !== "all") {
       filtered = filtered.filter(car => 
         filter === "available" ? car.status === "Available" : car.status === "Sold"
@@ -244,7 +242,6 @@ const InventoryPage = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      {/* Hero Banner */}
       <div 
         className="relative pt-40 pb-24 bg-black"
         style={{
@@ -264,13 +261,10 @@ const InventoryPage = () => {
         </div>
       </div>
 
-      {/* Search Section */}
       <SearchSection />
 
-      {/* Filters Section */}
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-wrap justify-between items-center gap-4">
-          {/* Status Filter */}
           <div className="flex gap-2">
             {(["all", "available", "sold"] as const).map((status) => (
               <Button
@@ -284,7 +278,6 @@ const InventoryPage = () => {
             ))}
           </div>
           
-          {/* Currency Toggle */}
           <div className="flex gap-2">
             {(["USD", "AED", "EUR"] as const).map((curr) => (
               <Button
@@ -299,10 +292,13 @@ const InventoryPage = () => {
           </div>
         </div>
 
-        {/* Cars Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
           {filteredCars.map((car) => (
-            <Card key={car.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
+            <Card 
+              key={car.id} 
+              className="overflow-hidden group hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => navigate(`/inventory/${car.id}`)}
+            >
               <div className="relative h-64 overflow-hidden rounded-t-lg">
                 <img
                   src={car.image}
@@ -363,55 +359,19 @@ const InventoryPage = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 text-sm text-luxury-600">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="font-medium text-luxury-800">Year</p>
-                      <p>{car.year}</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium text-luxury-800">Engine:</span>
+                      <span>{car.engine}</span>
                     </div>
-                    <div>
-                      <p className="font-medium text-luxury-800">Kilometers</p>
-                      <p>{car.mileage} km</p>
+                    <div className="flex justify-between">
+                      <span className="font-medium text-luxury-800">Year:</span>
+                      <span>{car.year}</span>
                     </div>
-                    <div>
-                      <p className="font-medium text-luxury-800">Warranty</p>
-                      <p>{car.warranty}</p>
+                    <div className="flex justify-between">
+                      <span className="font-medium text-luxury-800">Color:</span>
+                      <span>{car.color}</span>
                     </div>
-                    <div>
-                      <p className="font-medium text-luxury-800">Specs</p>
-                      <p>{car.specs}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-luxury-800">Transmission</p>
-                      <p>{car.transmission}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-luxury-800">Body Type</p>
-                      <p>{car.bodyType}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-luxury-800">Fuel Type</p>
-                      <p>{car.fuelType}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-luxury-800">Color</p>
-                      <p>{car.color}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-luxury-800">Doors</p>
-                      <p>{car.doors}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-luxury-800">Cylinders</p>
-                      <p>{car.cylinders}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-luxury-800">Horsepower</p>
-                      <p>{car.horsepower} HP</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="font-medium text-luxury-800">Location</p>
-                    <p>{car.location}</p>
                   </div>
                 </div>
               </CardContent>
