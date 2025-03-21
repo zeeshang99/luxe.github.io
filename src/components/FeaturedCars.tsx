@@ -1,75 +1,149 @@
-
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-
-const cars = [
-  {
-    id: 1,
-    name: "Porsche 911 GT3",
-    price: "$162,450",
-    year: 2023,
-    image: "https://images.unsplash.com/photo-1492321936769-b49830bc1d1e",
-    mileage: "1,200 mi",
-    location: "Los Angeles, CA",
-  },
-  {
-    id: 2,
-    name: "Mercedes-AMG GT",
-    price: "$148,800",
-    year: 2023,
-    image: "https://images.unsplash.com/photo-1433086966358-54859d0ed716",
-    mileage: "890 mi",
-    location: "Miami, FL",
-  },
-  {
-    id: 3,
-    name: "Aston Martin DB11",
-    price: "$205,600",
-    year: 2023,
-    image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07",
-    mileage: "450 mi",
-    location: "New York, NY",
-  },
-];
+import { supabase } from "@/lib/supabase";
+import type { Car } from "@/types/car";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getStorageUrl } from "@/lib/supabase";
+import Pagination from "./Pagination";
+import formatCurrency from '@/utils/currencyFormatter';
+import ScrollReveal from "./ScrollReveal";
+import { motion } from "framer-motion";
 
 const FeaturedCars = () => {
+  const [featuredCars, setFeaturedCars] = useState<Car[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const carsPerPage = 12;
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const fetchFeaturedCars = async () => {
+      try {
+        console.log('Fetching featured cars...');
+        const { data, error } = await supabase
+          .from('cars')
+          .select('*')
+          .eq('status', 'Available') // Only fetch available cars
+          .order('price_usd', { ascending: false })
+          .limit(6);
+
+        console.log('Fetched data:', data);
+        console.log('Error:', error);
+
+        if (error) throw error;
+
+        if (data) {
+          setFeaturedCars(data);
+        }
+      } catch (err) {
+        console.error('Error fetching cars:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedCars();
+  }, []);
+
+  const formatPrice = (price: number) => {
+    return `$ ${price.toLocaleString()}`;
+  };
+
+  const indexOfLastCar = currentPage * carsPerPage;
+  const indexOfFirstCar = indexOfLastCar - carsPerPage;
+  const currentCars = featuredCars.slice(indexOfFirstCar, indexOfLastCar);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  const handleCardClick = (carId: number) => {
+    navigate(`/inventory/${carId}`, {
+      state: { from: location.pathname }
+    });
+  };
+
+  const renderCarGrid = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+      {currentCars.map((car) => (
+        <motion.div
+          key={car.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          whileHover={{ y: -8 }}
+        >
+          <Card 
+            className="overflow-hidden rounded-[28px] hover:shadow-2xl transition-all duration-300 cursor-pointer bg-white shadow-lg"
+            onClick={() => handleCardClick(car.id)}
+          >
+            <div className="p-4">
+              <div className="relative aspect-[16/10] rounded-[20px] overflow-hidden mb-4 shadow-md">
+                <img
+                  src={car.image ? car.image : getStorageUrl(car.folder_path)}
+                  alt={car.name}
+                  className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-105"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
+                />
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {car.name}
+                </h3>
+                
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+      ))}
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <section className="py-20 bg-luxury-50">
+        <div className="container mx-auto px-4 text-center">
+          Loading...
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-20 bg-luxury-50">
+        <div className="container mx-auto px-4 text-center text-red-500">
+          {error}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="cars" className="py-20 bg-luxury-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <Badge className="mb-4">Featured Vehicles</Badge>
-          <h2 className="text-3xl font-bold mb-4">Our Premium Selection</h2>
-          <p className="text-luxury-600 max-w-2xl mx-auto">
-            Discover our handpicked collection of the world's finest automobiles
-          </p>
-        </div>
+        <ScrollReveal>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Our Premium Selection</h2>
+            <p className="text-luxury-600 max-w-2xl mx-auto">
+              Discover our handpicked collection of the world's finest automobiles
+            </p>
+          </div>
+        </ScrollReveal>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {cars.map((car) => (
-            <Card key={car.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
-              <div className="relative h-48 overflow-hidden">
-                <img
-                  src={car.image}
-                  alt={car.name}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-xl font-semibold">{car.name}</CardTitle>
-                  <span className="text-lg font-bold text-luxury-800">{car.price}</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm text-luxury-600">
-                  <p>Year: {car.year}</p>
-                  <p>Mileage: {car.mileage}</p>
-                  <p>Location: {car.location}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <ScrollReveal delay={0.2}>
+          {renderCarGrid()}
+        </ScrollReveal>
+        <Pagination
+          carsPerPage={carsPerPage}
+          totalCars={featuredCars.length}
+          paginate={paginate}
+          currentPage={currentPage}
+        />
       </div>
     </section>
   );

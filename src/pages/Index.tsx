@@ -1,7 +1,7 @@
 
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import SearchSection from "@/components/SearchSection";
+import BrandLogo from "@/components/BrandLogos";
 import FeaturedCars from "@/components/FeaturedCars";
 import RecentCars from "@/components/RecentCars";
 import SellForm from "@/components/SellForm";
@@ -15,7 +15,7 @@ const Index = () => {
       <Navbar />
       <HeroSection />
       <div>
-        <SearchSection />
+        <BrandLogo />
       </div>
       <div id="inventory">
         <FeaturedCars />

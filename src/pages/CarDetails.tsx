@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { 
@@ -27,139 +26,90 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const cars = [
-  {
-    id: 1,
-    name: "Bugatti Chiron",
-    price: {
-      USD: 3000000,
-      AED: 11020000,
-      EUR: 2760000
-    },
-    year: 2024,
-    image: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738",
-    mileage: "50",
-    location: "Dubai, UAE",
-    type: "Hypercar",
-    engine: "8.0L W16 Quad-Turbo",
-    color: "Black/Blue",
-    status: "Available",
-    specs: "GCC",
-    warranty: "5 Years",
-    transmission: "Automatic",
-    bodyType: "Coupe",
-    fuelType: "Petrol",
-    doors: 2,
-    cylinders: 16,
-    horsepower: 1500,
-    make: "bugatti"
-  },
-  {
-    id: 2,
-    name: "Rolls-Royce Phantom",
-    price: {
-      USD: 580000,
-      AED: 2130000,
-      EUR: 533000
-    },
-    year: 2024,
-    image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a",
-    mileage: "100",
-    location: "Dubai, UAE",
-    type: "Luxury",
-    engine: "6.75L V12",
-    color: "Midnight Blue",
-    status: "Available",
-    specs: "GCC",
-    warranty: "4 Years",
-    transmission: "Automatic",
-    bodyType: "Sedan",
-    fuelType: "Petrol",
-    doors: 4,
-    cylinders: 12,
-    horsepower: 563,
-    make: "rolls royce"
-  },
-  {
-    id: 3,
-    name: "Lamborghini Aventador",
-    price: {
-      USD: 450000,
-      AED: 1560000,
-      EUR: 372000
-    },
-    year: 2023,
-    image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b",
-    mileage: "250",
-    location: "Abu Dhabi, UAE",
-    type: "Supercar",
-    engine: "6.5L V12",
-    color: "Red",
-    status: "Available",
-    specs: "European",
-    warranty: "3 Years",
-    transmission: "Automatic",
-    bodyType: "Coupe",
-    fuelType: "Petrol",
-    doors: 2,
-    cylinders: 12,
-    horsepower: 770,
-    make: "lamborghini"
-  },
-];
-
-const carImages = {
-  1: [
-    "https://images.unsplash.com/photo-1617814076367-b759c7d7e738",
-    "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?q=80",
-    "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?q=60",
-  ],
-  2: [
-    "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a",
-    "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?q=80",
-    "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?q=60",
-  ],
-  3: [
-    "https://images.unsplash.com/photo-1544636331-e26879cd4d9b",
-    "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?q=80",
-    "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?q=60",
-  ],
-};
-
-const formatPrice = (price: { [key: string]: number }, currency: string) => {
-  const currencySymbols = {
-    USD: "$",
-    AED: "AED",
-    EUR: "€"
-  };
-  return {
-    symbol: currencySymbols[currency as keyof typeof currencySymbols],
-    value: price[currency].toLocaleString()
-  };
-};
+import { useToast } from "@/components/ui/use-toast";
+import { supabase, getStorageUrl, getEngineSoundUrl } from "@/lib/supabase";
+import type { Car } from "@/types/car";
+import Navbar from "@/components/Navbar";
+import formatCurrency from '@/utils/currencyFormatter';
+import CarEnquiryModal from "@/components/CarEnquiryModal";
+import ImageGalleryModal from "@/components/ImageGalleryModal";
 
 const CarDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const carId = Number(id);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
   const [isInCompare, setIsInCompare] = useState(false);
+  const [car, setCar] = useState<Car | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const [currency, setCurrency] = useState<"USD" | "AED" | "EUR">("AED");
+  const [previousPath, setPreviousPath] = useState<string>("/inventory");
+  const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
-  const car = cars.find((c) => c.id === carId);
-  const images = carImages[carId] || [];
+  useEffect(() => {
+    const fetchCarDetails = async () => {
+      try {
+        const { data: car, error } = await supabase
+          .from('cars')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        if (car) {
+          const mainImage = car.image.startsWith('http') 
+            ? car.image 
+            : getStorageUrl(`${car.folder_path}/1.jpg`);
+          
+          const additionalImages = car.images?.map((img: string, index: number) => 
+            img.startsWith('http') 
+              ? img 
+              : getStorageUrl(`${car.folder_path}/${index + 2}.jpg`)
+          ) || [];
+
+          setCar({
+            ...car,
+            image: mainImage,
+            images: [mainImage, ...additionalImages]
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching car details:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchCarDetails();
+    }
+  }, [id]);
 
   useEffect(() => {
     const carsToCompare = JSON.parse(localStorage.getItem("carsToCompare") || "[]");
-    setIsInCompare(carsToCompare.some((c: typeof car) => c.id === carId));
+    setIsInCompare(carsToCompare.some((c: Car) => c.id === carId));
   }, [carId]);
+
+  useEffect(() => {
+    const referrer = document.referrer;
+    if (referrer.includes(window.location.origin)) {
+      const path = referrer.split(window.location.origin)[1];
+      if (path) {
+        setPreviousPath(path);
+      }
+    }
+  }, []);
 
   const handleCompare = () => {
     const carsToCompare = JSON.parse(localStorage.getItem("carsToCompare") || "[]");
     
     if (isInCompare) {
-      const updatedCars = carsToCompare.filter((c: typeof car) => c.id !== carId);
+      const updatedCars = carsToCompare.filter((c: Car) => c.id !== carId);
       localStorage.setItem("carsToCompare", JSON.stringify(updatedCars));
       setIsInCompare(false);
       
@@ -193,11 +143,11 @@ const CarDetails = () => {
   };
 
   const handlePrevImage = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    setCurrentImageIndex((prev) => (prev === 0 ? car?.images.length - 1 : prev - 1));
   };
 
   const handleNextImage = () => {
-    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    setCurrentImageIndex((prev) => (prev === car?.images.length - 1 ? 0 : prev + 1));
   };
 
   const handleShare = () => {
@@ -209,206 +159,297 @@ const CarDetails = () => {
     }
   };
 
-  if (!car) {
+  const handleBack = () => {
+    if (location.state?.from) {
+      navigate(location.state.from, {
+        replace: true,
+        state: {
+          restoreScroll: true,
+          scrollPosition: location.state.scrollPosition,
+          page: location.state.page,
+          filter: location.state.filter,
+          currency: location.state.currency
+        }
+      });
+    } else {
+      navigate('/inventory');
+    }
+  };
+
+  const formatPrice = (car: Car | null) => {
+    if (!car) return '';
+    if (car.status === 'Sold') return 'Sold';
+    if (!car.price_usd) return 'Price on Request';
+
+    const currencySymbols = {
+      USD: "$",
+      AED: "AED",
+      EUR: "€"
+    };
+
+    const prices = {
+      USD: car.price_usd,
+      AED: car.price_usd * 3.67,
+      EUR: car.price_usd * 0.91
+    };
+
+    try {
+      return `${currencySymbols[currency]} ${prices[currency].toLocaleString('en-US')}`;
+    } catch (error) {
+      console.error('Price formatting error:', error);
+      return 'Price on Request';
+    }
+  };
+
+  const PriceButton = () => (
+    <Button
+      variant="outline"
+      onClick={() => setCurrency(currency === "USD" ? "AED" : currency === "AED" ? "EUR" : "USD")}
+      className="flex items-center gap-2"
+    >
+      <span className="font-bold text-luxury-800">
+        {formatPrice(car)}
+      </span>
+    </Button>
+  );
+
+  const handleContactSeller = () => {
+    setIsEnquiryModalOpen(true);
+  };
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="container mx-auto px-4 py-20">
-          <h1 className="text-2xl font-bold">Car not found</h1>
+        <Navbar forceLight />
+        <div className="container mx-auto px-4 py-20 text-center">Loading...</div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !car) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar forceLight />
+        <div className="container mx-auto px-4 py-20 text-center text-red-500">
+          {error || 'Car not found'}
         </div>
         <Footer />
       </div>
     );
   }
 
-  const formattedPrice = formatPrice(car.price, selectedCurrency);
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="container mx-auto px-4 py-20">
-        <Button
-          variant="outline"
-          onClick={() => navigate("/inventory")}
-          className="mb-8"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Inventory
-        </Button>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-          <div className="space-y-4">
-            <div className="relative aspect-video overflow-hidden rounded-lg shadow-xl">
-              <img
-                src={images[currentImageIndex]}
-                alt={car.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 flex items-center justify-between px-4">
+    <div className="min-h-screen relative">
+      {/* Background Image with Blur */}
+      {car && (
+        <div 
+          className="fixed inset-0 w-full h-full z-0"
+          style={{
+            backgroundImage: `url(${car.images[0]})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(8px)',
+            opacity: '0.4'
+          }}
+        />
+      )}
+
+      <Navbar forceLight />
+      
+      {/* Main Content */}
+      <div className="relative z-10 container mx-auto px-4 py-32">
+        {/* Back Button and Title Row */}
+        <div className="flex items-center justify-between mb-16">
+          <Button
+            variant="ghost"
+            onClick={handleBack}
+            className="backdrop-blur-sm shadow-lg shadow-black/20 border-0"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+          <h1 className="text-4xl font-bold text-center flex-1 px-3">{car?.name}</h1>
+          <div className="w-[100px]"></div> {/* Spacer for alignment */}
+        </div>
+
+        {/* Car Images Section */}
+        <div className="max-w-7xl mx-auto mb-12">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl overflow-hidden p-6">
+            {/* Main Image with Navigation */}
+            <div className="flex items-center gap-6 mb-6">
+              {/* Left Button */}
+              {car.images && car.images.length > 1 && (
                 <Button
                   variant="secondary"
                   size="icon"
+                  className="flex-none w-12 h-12 bg-white/80 hover:bg-white rounded-full"
                   onClick={handlePrevImage}
-                  className="rounded-full bg-white/80 hover:bg-white"
                 >
                   <ChevronLeft className="h-6 w-6" />
                 </Button>
+              )}
+
+              {/* Main Image */}
+              <div 
+                className="flex-1 aspect-[16/10] rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)] cursor-pointer"
+                onClick={() => setIsGalleryOpen(true)}
+              >
+                {car.images && car.images.length > 0 && (
+                  <img
+                    src={car.images[currentImageIndex]}
+                    alt={car.name}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                )}
+              </div>
+
+              {/* Right Button */}
+              {car.images && car.images.length > 1 && (
                 <Button
                   variant="secondary"
                   size="icon"
+                  className="flex-none w-12 h-12 bg-white/80 hover:bg-white rounded-full"
                   onClick={handleNextImage}
-                  className="rounded-full bg-white/80 hover:bg-white"
                 >
                   <ChevronRight className="h-6 w-6" />
                 </Button>
-              </div>
-              <div className="absolute top-4 left-4">
-                <span className={`px-4 py-2 rounded-full text-sm font-medium ${
-                  car.status === "Available" ? "bg-green-500" : "bg-red-500"
-                } text-white shadow-lg`}>
-                  {car.status}
-                </span>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              {images.map((img, index) => (
-                <div
-                  key={index}
-                  className={`aspect-video overflow-hidden rounded-lg cursor-pointer hover:opacity-80 transition-opacity ${
-                    currentImageIndex === index ? "ring-2 ring-black" : ""
-                  }`}
-                  onClick={() => setCurrentImageIndex(index)}
-                >
-                  <img
-                    src={img}
-                    alt={`${car.name} view ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="space-y-6">
-            <div className="flex justify-between items-start">
-              <h1 className="text-3xl font-bold mb-2">{car.name}</h1>
-              <div className="flex items-center gap-2">
-                <Select
-                  value={selectedCurrency}
-                  onValueChange={setSelectedCurrency}
-                >
-                  <SelectTrigger className="w-24">
-                    <SelectValue placeholder="Currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="AED">AED</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-2xl font-bold">
-                  <span className="text-gray-500">{formattedPrice.symbol}</span>
-                  <span className="text-red-500">{formattedPrice.value}</span>
-                </p>
-              </div>
+              )}
             </div>
             
-            <div className="flex gap-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button className="flex-1 bg-black hover:bg-black/90">
-                    <Phone className="h-4 w-4 mr-2" />
-                    Contact Us
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Phone className="h-4 w-4 mr-2" />
-                    <span>04 323 2999</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Mail className="h-4 w-4 mr-2" />
-                    <span>contact@example.com</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            {/* Thumbnails */}
+            {car?.images && car.images.length > 1 && (
+              <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 bg-white/50 p-4 rounded-2xl">
+                {car.images.map((image, index) => (
+                  <div
+                    key={index}
+                    className={`aspect-[16/10] rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-105 shadow-[0_4px_15px_rgb(0,0,0,0.1)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ${
+                      currentImageIndex === index ? 'ring-2 ring-red-600' : ''
+                    }`}
+                    onClick={() => {
+                      setCurrentImageIndex(index);
+                      setIsGalleryOpen(true);
+                    }}
+                  >
+                    <img
+                      src={image}
+                      alt={`${car.name} - View ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Car Details Section */}
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8">
+            {/* Price and Actions */}
+            <div className="flex justify-between items-start mb-8">
+              <Button
+                variant="ghost"
+                disableHover
+                className="price-button shadow-lg shadow-black/20"
+                onClick={() => setCurrency(currency === "USD" ? "AED" : currency === "AED" ? "EUR" : "USD")}
+              >
+                <span className="font-bold">
+                  {formatPrice(car)}
+                </span>
+              </Button>
               <Button 
-                variant="outline" 
-                className="flex-1"
+                variant="ghost" 
                 onClick={handleShare}
+                className="bg-white/10 backdrop-blur-sm shadow-lg shadow-black/20 hover:bg-white/20 border-0"
               >
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
               </Button>
+            </div>
+
+            {/* Specifications Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div className="space-y-2">
+                <h3 className="font-semibold text-gray-900">Specifications</h3>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <span className="text-gray-600">Make:</span>
+                  <span>{car.make}</span>
+                  <span className="text-gray-600">Model:</span>
+                  <span>{car.type}</span>
+                  <span className="text-gray-600">Year:</span>
+                  <span>{car.year}</span>
+                  <span className="text-gray-600">Mileage:</span>
+                  <span>{car.mileage} km</span>
+                  <span className="text-gray-600">Engine:</span>
+                  <span>{car.engine}</span>
+                  <span className="text-gray-600">Color:</span>
+                  <span>{car.color}</span>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="font-semibold text-gray-900">Additional Info</h3>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <span className="text-gray-600">Body:</span>
+                  <span>{car.body_type}</span>
+                  <span className="text-gray-600">Transmission:</span>
+                  <span>{car.transmission}</span>
+                  <span className="text-gray-600">Fuel Type:</span>
+                  <span>{car.fuel_type}</span>
+                  <span className="text-gray-600">Location:</span>
+                  <span>{car.location}</span>
+                  <span className="text-gray-600">Status:</span>
+                  <span className={car.status === 'Sold' ? 'text-red-600 font-semibold' : 'text-green-600'}>
+                    {car.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button className="flex-1" onClick={handleContactSeller}>
+                <Phone className="mr-2 h-4 w-4" />
+                Contact Seller
+              </Button>
               <Button 
-                variant="outline" 
-                className="flex-1"
+                variant="ghost" 
+                className="flex-1 bg-white/10 text-gray-900 backdrop-blur-sm shadow-lg shadow-black/20 hover:bg-white/20 border-0"
                 onClick={handleCompare}
               >
                 {isInCompare ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
-                    Added
+                    In Compare
                   </>
                 ) : (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
-                    Compare
+                    Add to Compare
                   </>
                 )}
               </Button>
             </div>
-            
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-semibold text-luxury-800 mb-1">Engine</h3>
-                <p>{car.engine}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-luxury-800 mb-1">Year</h3>
-                <p>{car.year}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-luxury-800 mb-1">Color</h3>
-                <p>{car.color}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-luxury-800 mb-1">Mileage</h3>
-                <p>{car.mileage} km</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-luxury-800 mb-1">Transmission</h3>
-                <p>{car.transmission}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-luxury-800 mb-1">Body Type</h3>
-                <p>{car.bodyType}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-luxury-800 mb-1">Fuel Type</h3>
-                <p>{car.fuelType}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-luxury-800 mb-1">Horsepower</h3>
-                <p>{car.horsepower} HP</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-luxury-800 mb-1">Warranty</h3>
-                <p>{car.warranty}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-luxury-800 mb-1">Specs</h3>
-                <p>{car.specs}</p>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-luxury-800 mb-1">Location</h3>
-              <p>{car.location}</p>
-            </div>
           </div>
         </div>
       </div>
+      <CarEnquiryModal
+        isOpen={isEnquiryModalOpen}
+        onClose={() => setIsEnquiryModalOpen(false)}
+        carDetails={car}
+      />
+      {car?.images && (
+        <ImageGalleryModal
+            images={car.images}
+            currentIndex={currentImageIndex}
+            isOpen={isGalleryOpen}
+            onClose={() => setIsGalleryOpen(false)}
+            onPrevious={handlePrevImage}
+            onNext={handleNextImage}
+            onIndexChange={setCurrentImageIndex}
+          />
+      )}
       <Footer />
     </div>
   );

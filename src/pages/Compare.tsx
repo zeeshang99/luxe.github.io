@@ -35,15 +35,11 @@ const ComparePage = () => {
   const navigate = useNavigate();
   const carsToCompare = JSON.parse(localStorage.getItem("carsToCompare") || "[]") as Car[];
   
-  const [carImages] = useState<{ [key: number]: string[] }>(() => {
+  const [carImages, setCarImages] = useState<{ [key: number]: string[] }>(() => {
     const images: { [key: number]: string[] } = {};
     carsToCompare.forEach(car => {
-      images[car.id] = [
-        car.image,
-        car.image.replace('?', '?v=1'),
-        car.image.replace('?', '?v=2'),
-        car.image.replace('?', '?v=3'),
-      ];
+      const imageUrls = [car.image];
+      images[car.id] = imageUrls;
     });
     return images;
   });
@@ -66,30 +62,41 @@ const ComparePage = () => {
     window.location.reload();
   };
 
-  const formatSpecification = (label: string, value: string | number) => (
-    <div className="py-2 border-b border-gray-100 last:border-0">
-      <p className="font-medium text-gray-700">{label}</p>
-      <p className="text-gray-600">{value}</p>
-    </div>
-  );
+  const formatSpecification = (label: string, value: string | number | React.ReactNode | undefined) => {
+    if (!value) return null;
+    return (
+      <div className="space-y-1">
+        <p className="text-xs font-medium text-gray-500">{label}</p>
+        <p className="text-sm text-gray-800">{value}</p>
+      </div>
+    );
+  };
 
-  const nextImage = (carId: number) => {
+  const nextImage = (carId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const maxImages = carImages[carId]?.length || 1;
+    if (maxImages <= 1) return;
+
     setCurrentImageIndexes(prev => ({
       ...prev,
-      [carId]: ((prev[carId] || 0) + 1) % (carImages[carId]?.length || 1)
+      [carId]: ((prev[carId] || 0) + 1) % maxImages
     }));
   };
 
-  const prevImage = (carId: number) => {
+  const prevImage = (carId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const maxImages = carImages[carId]?.length || 1;
+    if (maxImages <= 1) return;
+
     setCurrentImageIndexes(prev => ({
       ...prev,
-      [carId]: ((prev[carId] || 0) - 1 + (carImages[carId]?.length || 1)) % (carImages[carId]?.length || 1)
+      [carId]: ((prev[carId] || 0) - 1 + maxImages) % maxImages
     }));
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+    <div className="min-h-screen bg-gray-50/50">
+      <Navbar forceLight />
       
       <div className="container mx-auto px-4 pt-24 pb-12">
         <div className="text-center mb-12">
@@ -109,72 +116,101 @@ const ComparePage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {carsToCompare.map((car) => (
-            <Card key={car.id} className="relative overflow-hidden">
+            <Card 
+              key={car.id} 
+              className="relative overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
+            >
               <button
                 onClick={() => removeCar(car.id)}
-                className="absolute top-2 right-2 p-1 bg-white/80 rounded-full hover:bg-white/90 transition-colors z-10"
+                className="absolute top-4 right-4 p-2 bg-white/90 rounded-full hover:bg-white transition-colors z-10 shadow-md"
               >
                 <X className="h-4 w-4 text-gray-600" />
               </button>
-              <div className="p-6">
-                <div className="relative group">
-                  <img
-                    src={carImages[car.id]?.[currentImageIndexes[car.id] || 0]}
-                    alt={car.name}
-                    className="w-full h-64 object-cover rounded-lg mb-4"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="bg-white/80 hover:bg-white/90"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        prevImage(car.id);
-                      }}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="bg-white/80 hover:bg-white/90"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        nextImage(car.id);
-                      }}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
+
+              <div className="p-5">
+                <div className="relative group mb-6">
+                  <div className="overflow-hidden rounded-xl">
+                    <img
+                      src={carImages[car.id]?.[currentImageIndexes[car.id] || 0] || car.image}
+                      alt={car.name}
+                      className="w-full h-[280px] object-cover transform hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
+
+                  {(carImages[car.id]?.length || 0) > 1 && (
+                    <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                        onClick={(e) => prevImage(car.id, e)}
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                        onClick={(e) => nextImage(car.id, e)}
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                <h3 className="text-xl font-semibold mb-4">{car.name}</h3>
+
+                <h3 className="text-2xl font-semibold mb-6 text-gray-800">{car.name}</h3>
                 
-                <div className="space-y-1">
-                  {formatSpecification("Year", car.year)}
-                  {formatSpecification("Engine", car.engine)}
-                  {formatSpecification("Mileage", `${car.mileage} km`)}
-                  {formatSpecification("Color", car.color)}
-                  {formatSpecification("Type", car.type)}
-                  {formatSpecification("Location", car.location)}
-                  {formatSpecification("Status", car.status)}
-                  {formatSpecification("Transmission", car.transmission)}
-                  {formatSpecification("Body Type", car.bodyType)}
-                  {formatSpecification("Fuel Type", car.fuelType)}
-                  {formatSpecification("Horsepower", `${car.horsepower} HP`)}
-                  {formatSpecification("Warranty", car.warranty)}
-                  {formatSpecification("Specs", car.specs)}
+                <div className="space-y-6">
+                  {/* Key Specifications */}
+                  <div className="bg-gray-50/50 rounded-xl p-4">
+                    <h4 className="text-sm font-medium text-gray-600 mb-3">Key Specifications</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {formatSpecification("Year", car.year)}
+                      {formatSpecification("Engine", car.engine)}
+                      {formatSpecification("Mileage", car.mileage ? `${car.mileage} km` : undefined)}
+                      {formatSpecification("Color", car.color)}
+                    </div>
+                  </div>
+
+                  {/* Performance */}
+                  <div className="bg-gray-50/50 rounded-xl p-4">
+                    <h4 className="text-sm font-medium text-gray-600 mb-3">Performance</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {formatSpecification("Body Type", car.bodyType)}
+                      {formatSpecification("Fuel Type", car.fuelType)}
+                      {formatSpecification("Transmission", car.transmission)}
+                      {formatSpecification("Horsepower", car.horsepower ? `${car.horsepower} HP` : undefined)}
+                    </div>
+                  </div>
+
+                  {/* Additional Info */}
+                  <div className="bg-gray-50/50 rounded-xl p-4">
+                    <h4 className="text-sm font-medium text-gray-600 mb-3">Additional Information</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {formatSpecification("Location", car.location)}
+                      {formatSpecification("Status", 
+                        <span className={`${
+                          car.status === 'Sold' ? 'text-red-500' : 'text-green-500'
+                        } font-medium`}>
+                          {car.status}
+                        </span>
+                      )}
+                      {formatSpecification("Warranty", car.warranty)}
+                      {formatSpecification("Specs", car.specs)}
+                    </div>
+                  </div>
                 </div>
               </div>
             </Card>
           ))}
 
           {carsToCompare.length < 10 && (
-            <Card className="relative overflow-hidden">
-              <div className="p-6 flex flex-col items-center justify-center min-h-[400px]">
+            <Card className="relative overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
+              <div className="p-8 flex flex-col items-center justify-center min-h-[400px]">
                 <Button
                   variant="outline"
-                  className="w-full max-w-xs"
+                  className="w-full max-w-xs bg-white/90 hover:bg-white/95 transition-colors shadow-md"
                   onClick={() => navigate("/inventory")}
                 >
                   <Plus className="h-4 w-4 mr-2" />
