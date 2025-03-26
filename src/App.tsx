@@ -1,4 +1,5 @@
-import { Toast } from "@/components/ui/toaster";
+
+import { Toaster } from "@/components/ui/toaster";
 import { ToastProvider } from "@radix-ui/react-toast";
 import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,7 +22,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <ToastProvider>
-        <Toast />
+        <Toaster />
         <Sonner />
         <BrowserRouter>
           <Routes>
